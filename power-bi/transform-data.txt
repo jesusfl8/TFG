@@ -1,0 +1,20 @@
+let
+    Origen = Json.Document(Web.Contents("https://b3vvclnp4dy5k6ymklxbryreye0zeotq.lambda-url.us-east-1.on.aws/")),
+    #"Convertida en tabla" = Table.FromList(Origen, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
+    #"Se expandió Column1" = Table.ExpandRecordColumn(#"Convertida en tabla", "Column1", {"Danceability", "Acousticness", "Playlist", "cancion", "Valence", "Energy", "Artista", "id", "Tempo"}, {"Danceability", "Acousticness", "Playlist", "cancion", "Valence", "Energy", "Artista", "id", "Tempo"}),
+    #"Se expandió Danceability" = Table.ExpandRecordColumn(#"Se expandió Column1", "Danceability", {"N"}, {"Danceability.N"}),
+    #"Se expandió Acousticness" = Table.ExpandRecordColumn(#"Se expandió Danceability", "Acousticness", {"N"}, {"Acousticness.N"}),
+    #"Se expandió Playlist" = Table.ExpandRecordColumn(#"Se expandió Acousticness", "Playlist", {"S"}, {"Playlist.S"}),
+    #"Se expandió cancion" = Table.ExpandRecordColumn(#"Se expandió Playlist", "cancion", {"S"}, {"cancion.S"}),
+    #"Se expandió Valence" = Table.ExpandRecordColumn(#"Se expandió cancion", "Valence", {"N"}, {"Valence.N"}),
+    #"Se expandió Energy" = Table.ExpandRecordColumn(#"Se expandió Valence", "Energy", {"N"}, {"Energy.N"}),
+    #"Se expandió Artista" = Table.ExpandRecordColumn(#"Se expandió Energy", "Artista", {"S"}, {"Artista.S"}),
+    #"Se expandió id" = Table.ExpandRecordColumn(#"Se expandió Artista", "id", {"S"}, {"id.S"}),
+    #"Se expandió Tempo" = Table.ExpandRecordColumn(#"Se expandió id", "Tempo", {"N"}, {"Tempo.N"}),
+    #"Valor reemplazado" = Table.ReplaceValue(#"Se expandió Tempo",".",",",Replacer.ReplaceText,{"Danceability.N", "Acousticness.N", "Valence.N", "Energy.N", "Tempo.N"}),
+    #"Tipo cambiado" = Table.TransformColumnTypes(#"Valor reemplazado",{{"Danceability.N", type number}, {"Acousticness.N", type number}, {"Valence.N", type number}, {"Energy.N", type number}, {"Tempo.N", type number}}),
+    #"Columnas con nombre cambiado" = Table.RenameColumns(#"Tipo cambiado",{{"Danceability.N", "Danceability"}, {"Acousticness.N", "Acousticness"}, {"Playlist.S", "Playlist"}, {"cancion.S", "cancion"}, {"Valence.N", "Valence"}, {"Energy.N", "Energy"}, {"Artista.S", "Artista"}, {"id.S", "id"}, {"Tempo.N", "Tempo"}}),
+    #"Columnas reordenadas" = Table.ReorderColumns(#"Columnas con nombre cambiado",{"id", "cancion", "Artista", "Playlist", "Danceability", "Acousticness", "Valence", "Energy", "Tempo"}),
+    #"Valor reemplazado1" = Table.ReplaceValue(#"Columnas reordenadas","Top 50 - ","",Replacer.ReplaceText,{"Playlist"})
+in
+    #"Valor reemplazado1"
